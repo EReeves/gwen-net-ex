@@ -103,7 +103,7 @@ namespace Gwen.Renderer.MonoGame
 			m_ClipEnabled = false;
 			m_TextureEnabled = false;
 			m_LastTexture = null;
-			spriteBatch.Begin();
+			spriteBatch.Begin(SpriteSortMode.Texture);
 		}
 
 		public override void End()
