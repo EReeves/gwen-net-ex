@@ -36,11 +36,15 @@ namespace Gwen.Renderer.MonoGame
 
 		private SpriteFont m_DefaultFont;
 
+		//Used for text rendering.
+		private SpriteBatch spriteBatch;
+
 		public MonoGame(GraphicsDevice graphicsDevice, ContentManager contentManager, Effect effect)
 		{
 			m_GraphicsDevice = graphicsDevice;
 			m_ContentManager = contentManager;
 			m_Effect = new GwenEffect(effect);
+			spriteBatch = new SpriteBatch(graphicsDevice);
 
 			m_VertexArray = new VertexPositionColorTexture[MaxVerts];
 			m_IndexArray = new short[MaxVerts * 3 / 2];
@@ -99,11 +103,13 @@ namespace Gwen.Renderer.MonoGame
 			m_ClipEnabled = false;
 			m_TextureEnabled = false;
 			m_LastTexture = null;
+			spriteBatch.Begin();
 		}
 
 		public override void End()
 		{
 			Flush();
+			spriteBatch.End();
 		}
 
 		private void Flush()
@@ -475,10 +481,7 @@ namespace Gwen.Renderer.MonoGame
 
 		public override void RenderText(Font font, Point position, string text)
 		{
-			Flush();
-
-			SpriteFont sysFont = font.RendererData as SpriteFont;
-			if (sysFont == null || Math.Abs(font.RealSize - font.Size * Scale) > 2)
+			if (!(font.RendererData is SpriteFont sysFont) || Math.Abs(font.RealSize - font.Size * Scale) > 2)
 			{
 				FreeFont(font);
 				LoadFont(font);
@@ -491,33 +494,10 @@ namespace Gwen.Renderer.MonoGame
 				return;
 			}
 
-			Texture tex;
-			var key = new Tuple<String, Font>(text, font);
-			if (!m_StringCache.TryGetValue(key, out tex))
-			{
-				Size size = MeasureText(font, text);
-
-				RenderTarget2D target = new RenderTarget2D(m_GraphicsDevice, size.Width, size.Height);
-				m_GraphicsDevice.SetRenderTarget(target);
-				m_GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.Transparent);
-
-				SpriteBatch spriteBatch = new SpriteBatch(m_GraphicsDevice);
-				spriteBatch.Begin();
-				spriteBatch.DrawString(sysFont, text, Vector2.Zero, Microsoft.Xna.Framework.Color.White);
-				spriteBatch.End();
-				spriteBatch.Dispose();
-
-				m_GraphicsDevice.SetRenderTarget(null);
-
-				tex = new Texture(this) { Width = size.Width, Height = size.Height, RendererData = target };
-				DrawTexturedRect(tex, new Rectangle(position.X, position.Y, tex.Width, tex.Height));
-
-				m_StringCache[key] = tex;
-			}
-			else
-			{
-				DrawTexturedRect(tex, new Rectangle(position.X, position.Y, tex.Width, tex.Height));
-			}
+			var size = MeasureText(font, text);
+			var textRect = new Rectangle(position.X, position.Y, size.Width, size.Height);
+			textRect = Translate(textRect);
+			spriteBatch.DrawString(sysFont, text, new Vector2(textRect.X,textRect.Y),  Microsoft.Xna.Framework.Color.White);
 		}
 
 		public void Resize(int width, int height)
