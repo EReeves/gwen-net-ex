@@ -1644,6 +1644,26 @@ namespace Gwen.Control
 			return Measure(new Size(availableWidth, availableHeight));
 		}
 
+		public enum StretchType
+		{
+			None,
+			Horizontal,
+			Vertical,
+			Both
+		}
+
+		private StretchType m_Stretch = StretchType.None;
+		public StretchType Stretch
+		{
+			get => m_Stretch;
+			set
+			{
+				if (m_Stretch == value) return;
+				m_Stretch = value;
+				InvalidateParent();
+			}
+		}
+
 		/// <summary>
 		/// Call this method for all child controls.
 		/// </summary>
@@ -1665,10 +1685,19 @@ namespace Gwen.Control
 			if (Util.IsInfinity(size.Width) || Util.IsInfinity(size.Height))
 				throw new InvalidOperationException("Measured size cannot be infinity.");
 
-			if (!Util.IsIgnore(m_DesiredBounds.Width))
-				size.Width = m_DesiredBounds.Width;
-			if (!Util.IsIgnore(m_DesiredBounds.Height))
-				size.Height = m_DesiredBounds.Height;
+	
+				if (!Util.IsIgnore(m_DesiredBounds.Width))
+					size.Width = m_DesiredBounds.Width;
+				if (!Util.IsIgnore(m_DesiredBounds.Height))
+					size.Height = m_DesiredBounds.Height;
+
+				if (m_Stretch == StretchType.Both || m_Stretch == StretchType.Horizontal && !Util.IsInfinity(availableSize.Width))
+					size.Width = availableSize.Width;
+				
+				if (m_Stretch == StretchType.Both || m_Stretch == StretchType.Vertical && !Util.IsInfinity(availableSize.Height))
+					size.Height = availableSize.Height;			
+			
+
 
 			size.Width = Util.Clamp(size.Width, m_MinimumSize.Width, m_MaximumSize.Width);
 			size.Height = Util.Clamp(size.Height, m_MinimumSize.Height, m_MaximumSize.Height);
