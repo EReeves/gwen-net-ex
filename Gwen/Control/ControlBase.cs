@@ -465,10 +465,10 @@ namespace Gwen.Control
 		public Size MinimumSize { get { return m_MinimumSize; } set { m_MinimumSize = value; InvalidateParent(); } }
 
 		/// <summary>
-		/// Size restriction.
+		/// Size restriction. BROKEN, for internal use only..
 		/// </summary>
 		[Xml.XmlProperty]
-		public Size MaximumSize { get { return m_MaximumSize; } set { m_MaximumSize = value; InvalidateParent(); } }
+		internal Size MaximumSize { get { return m_MaximumSize; } set { m_MaximumSize = value; InvalidateParent(); } }
 
 		/// <summary>
 		/// Determines whether hover should be drawn during rendering.
@@ -1663,6 +1663,8 @@ namespace Gwen.Control
 				InvalidateParent();
 			}
 		}
+
+		public bool PriorityControl { get; set; } = false;
 
 		/// <summary>
 		/// Call this method for all child controls.

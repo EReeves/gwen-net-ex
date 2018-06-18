@@ -242,6 +242,8 @@ namespace Gwen.Input
             {
                 canvas.CloseMenus();
             }
+            
+            
 
             if (null == HoveredControl) return false;
             if (HoveredControl.GetCanvas() != canvas) return false;

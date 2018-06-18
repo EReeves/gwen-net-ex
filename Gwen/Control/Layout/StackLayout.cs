@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Gwen.Control.Layout
 {
@@ -23,6 +24,7 @@ namespace Gwen.Control.Layout
 
 		protected override Size OnMeasure(Size availableSize)
 		{
+
 			availableSize -= Padding;
 
 			int width = 0;
@@ -66,19 +68,42 @@ namespace Gwen.Control.Layout
 
 			if (m_Horizontal)
 			{
+
 				int height = finalSize.Height;
 				int x = Padding.Left;
-
-				foreach (ControlBase child in this.Children)
+				int stretchWidth = -1;
+				
+				void arrange()
 				{
-					if (child.IsCollapsed)
-						continue;
+					int priorityCount = 0;
+					
+					foreach (ControlBase child in this.Children)
+					{
+						if (child.IsCollapsed)
+							continue;
 
-					child.Arrange(new Rectangle(x, Padding.Top, child.MeasuredSize.Width, height));
-					x += child.MeasuredSize.Width;
+						var width = child.MeasuredSize.Width;
+						if (child.PriorityControl && stretchWidth >= 0)
+						{
+							priorityCount++;
+							if(priorityCount > 1) throw new Exception("Only one priority control can exist per layout.");
+								width = stretchWidth;
+						}							
+
+						child.Arrange(new Rectangle(x, Padding.Top, width, height));
+						x += child.MeasuredSize.Width;
+					}
+
+					x += Padding.Right;
 				}
+				arrange();
 
-				x += Padding.Right;
+				if (x - Padding.Right < finalSize.Width)
+				{
+					stretchWidth = finalSize.Width - x;
+					x = Padding.Left;				
+					arrange();
+				}
 
 				return new Size(x, finalSize.Height + Padding.Top + Padding.Bottom);
 			}

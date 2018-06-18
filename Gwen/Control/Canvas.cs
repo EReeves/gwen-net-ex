@@ -23,6 +23,13 @@ namespace Gwen.Control
 		private readonly List<IDisposable> m_DisposeQueue; // dictionary for faster access?
 
 		private readonly HashSet<ControlBase> m_MeasureQueue = new HashSet<ControlBase>();
+		private Point mousePosition;
+
+		public override event GwenEventHandler<ClickedEventArgs> Clicked
+		{
+			add => base.Clicked += value;
+			remove => base.Clicked -= value;
+		}
 
 		/// <summary>
 		/// Scale for rendering.
@@ -245,6 +252,8 @@ namespace Gwen.Control
 			// Todo: Handle scaling here..
 			//float fScale = 1.0f / Scale();
 
+			mousePosition = new Point(x, y);
+
 			return InputHandler.OnMouseMoved(this, x, y, dx, dy);
 		}
 
@@ -256,6 +265,7 @@ namespace Gwen.Control
 		{
 			if (IsHidden || IsCollapsed) return false;
 
+			base.InputMouseClickedLeft(mousePosition.X, mousePosition.Y, true);
 			return InputHandler.OnMouseClicked(this, button, down);
 		}
 
